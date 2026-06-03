@@ -10,7 +10,7 @@ The new documentation site can be found at [fancyinnovations.com/docs/minecraft-
 !!!
 
 !!!danger
-Be aware, that only Paper and Folia is supported, but the plugin should work on any of its forks (like Purpur or Pufferfish). Spigot, Bukkit, Sponge and Fabric is not supported.
+Be aware, that only Paper and Folia is supported, but the plugin should work on any of its forks (like Purpur, Pufferfish or [CanvasMC](https://docs.canvasmc.io)). Spigot, Bukkit, Sponge and Fabric is not supported.
 !!!
 
 ## Installation
