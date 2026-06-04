@@ -1,0 +1,95 @@
+name: Release plugins to GitHub
+
+# Builds every plugin jar and attaches them to a GitHub Release so they can be
+# downloaded from this repository's "Releases" page.
+#
+# Unlike the deploy-release-* workflows (which publish to FancyInnovations'
+# Modrinth/Hangar/FancySpaces accounts and require their secrets), this workflow
+# only uses the built-in GITHUB_TOKEN, so it works on forks without any extra
+# configuration.
+#
+# Trigger it either by:
+#   - pushing a tag that starts with "v" (e.g. v3.0.0), or
+#   - running it manually from the Actions tab and entering a tag name.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to create (e.g. v3.0.0)"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark this release as a pre-release"
+        required: false
+        default: false
+        type: boolean
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '25'
+
+      - name: Modify gradlew permissions
+        run: chmod +x ./gradlew
+
+      - name: Build plugin jars
+        env:
+          RELEASE_CHANNEL: 'release'
+        run: >
+          ./gradlew
+          :plugins:fancynpcs:shadowJar
+          :plugins:fancynpcs-v2:shadowJar
+          :plugins:fancynpcs-model:shadowJar
+          :plugins:fancyholograms:shadowJar
+          :plugins:fancyholograms-v2:shadowJar
+          :plugins:fancydialogs:shadowJar
+          :plugins:fancyworlds:shadowJar
+          :plugins:fancyeconomy:shadowJar
+          :plugins:fancyvisuals:shadowJar
+
+      - name: Collect plugin jars
+        run: |
+          mkdir -p release-artifacts
+          # Only the top-level plugin shadowJars live at plugins/<plugin>/build/libs/.
+          # Nested API/implementation modules build one level deeper and are skipped
+          # by -maxdepth, and we drop the -sources/-javadoc variants explicitly.
+          find plugins -maxdepth 4 -type f -path '*/build/libs/*.jar' \
+            ! -name '*-sources.jar' ! -name '*-javadoc.jar' \
+            -exec cp -v {} release-artifacts/ \;
+          echo "Collected jars:"
+          ls -1 release-artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: ${{ github.event.inputs.tag || github.ref_name }}
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease || false }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: release-artifacts/*.jar
