@@ -1,0 +1,53 @@
+name: Build all plugins
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  build-all-plugins:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '25'
+
+      - name: Modify gradlew permissions
+        run: chmod +x ./gradlew
+
+      - name: Build all plugins
+        run: >
+          ./gradlew
+          :plugins:fancynpcs-v2:shadowJar
+          :plugins:fancynpcs:shadowJar
+          :plugins:fancynpcs-model:shadowJar
+          :plugins:fancyholograms-v2:shadowJar
+          :plugins:fancyholograms:shadowJar
+          :plugins:fancydialogs:shadowJar
+          :plugins:fancyworlds:shadowJar
+          :plugins:fancyeconomy:shadowJar
+          :plugins:fancyvisuals:shadowJar
+
+      - name: Upload plugin JARs
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugins
+          path: plugins/**/build/libs/*.jar
+          if-no-files-found: error
