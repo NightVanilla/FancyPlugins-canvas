@@ -246,9 +246,12 @@ public class Npc_26_1_1 extends Npc {
         PlayerTeam team = new PlayerTeam(new Scoreboard(), "npc-" + localName);
         team.getPlayers().clear();
         team.getPlayers().add(npc instanceof ServerPlayer npcPlayer ? npcPlayer.getGameProfile().name() : npc.getStringUUID());
-        team.setColor(PaperAdventure.asVanilla(data.getGlowingColor()));
+        // Throwaway team used only to build the packet below; write the fields
+        // directly because the PlayerTeam setters assert the global tick thread
+        // on Folia/Canvas, which command handlers do not run on.
+        ReflectionUtils.setValue(team, "color", PaperAdventure.asVanilla(data.getGlowingColor()));
         if (!data.isCollidable()) {
-            team.setCollisionRule(Team.CollisionRule.NEVER);
+            ReflectionUtils.setValue(team, "collisionRule", Team.CollisionRule.NEVER);
         }
 
         net.kyori.adventure.text.Component displayName = PaperColor.handler().translate(data.getDisplayName(), serverPlayer.getBukkitEntity());
@@ -270,15 +273,15 @@ public class Npc_26_1_1 extends Npc {
         }
 
         if (data.getDisplayName().equalsIgnoreCase("<empty>")) {
-            team.setNameTagVisibility(Team.Visibility.NEVER);
+            ReflectionUtils.setValue(team, "nameTagVisibility", Team.Visibility.NEVER);
             npc.setCustomName(null);
             npc.setCustomNameVisible(false);
         } else {
-            team.setNameTagVisibility(Team.Visibility.ALWAYS);
+            ReflectionUtils.setValue(team, "nameTagVisibility", Team.Visibility.ALWAYS);
         }
 
         if (npc instanceof ServerPlayer npcPlayer) {
-            team.setPlayerPrefix(vanillaComponent);
+            ReflectionUtils.setValue(team, "playerPrefix", vanillaComponent);
             npcPlayer.listName = vanillaComponent;
 
             EnumSet<ClientboundPlayerInfoUpdatePacket.Action> actions = EnumSet.noneOf(ClientboundPlayerInfoUpdatePacket.Action.class);
