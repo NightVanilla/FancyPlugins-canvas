@@ -249,9 +249,9 @@ public class Npc_1_21_9 extends Npc {
         // Throwaway team used only to build the packet below; write the fields
         // directly because the PlayerTeam setters assert the global tick thread
         // on Folia/Canvas, which command handlers do not run on.
-        ReflectionUtils.setValue(team, "color", PaperAdventure.asVanilla(data.getGlowingColor()));
+        ReflectionUtils.setValueResilient(team, "color", net.minecraft.ChatFormatting.class, 0, PaperAdventure.asVanilla(data.getGlowingColor()));
         if (!data.isCollidable()) {
-            ReflectionUtils.setValue(team, "collisionRule", Team.CollisionRule.NEVER);
+            ReflectionUtils.setValueResilient(team, "collisionRule", Team.CollisionRule.class, 0, Team.CollisionRule.NEVER);
         }
 
         net.kyori.adventure.text.Component displayName = PaperColor.handler().translate(data.getDisplayName(), serverPlayer.getBukkitEntity());
@@ -273,15 +273,15 @@ public class Npc_1_21_9 extends Npc {
         }
 
         if (data.getDisplayName().equalsIgnoreCase("<empty>")) {
-            ReflectionUtils.setValue(team, "nameTagVisibility", Team.Visibility.NEVER);
+            ReflectionUtils.setValueResilient(team, "nameTagVisibility", Team.Visibility.class, 0, Team.Visibility.NEVER);
             npc.setCustomName(null);
             npc.setCustomNameVisible(false);
         } else {
-            ReflectionUtils.setValue(team, "nameTagVisibility", Team.Visibility.ALWAYS);
+            ReflectionUtils.setValueResilient(team, "nameTagVisibility", Team.Visibility.class, 0, Team.Visibility.ALWAYS);
         }
 
         if (npc instanceof ServerPlayer npcPlayer) {
-            ReflectionUtils.setValue(team, "playerPrefix", vanillaComponent);
+            ReflectionUtils.setValueResilient(team, "playerPrefix", Component.class, 1, vanillaComponent);
             npcPlayer.listName = vanillaComponent;
 
             EnumSet<ClientboundPlayerInfoUpdatePacket.Action> actions = EnumSet.noneOf(ClientboundPlayerInfoUpdatePacket.Action.class);
