@@ -80,8 +80,9 @@ public class ReflectionUtils {
         }
 
         if (field == null) {
-            System.err.println("[FancyLib] ReflectionUtils: could not resolve field '" + name + "' ("
-                    + fieldType.getSimpleName() + ") on " + instance.getClass().getName());
+            // The field was both renamed and retyped/moved on this mapping, so it
+            // cannot be resolved. Stay silent: callers treat this as best-effort
+            // and a public setter (see the overload below) is the primary path.
             return false;
         }
 
@@ -90,9 +91,40 @@ public class ReflectionUtils {
             field.set(instance, value);
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
             return false;
         }
+    }
+
+    /**
+     * Applies a value by preferring a public {@code setter} and, only if that
+     * throws, falling back to a direct {@link #setValueResilient(Object, String,
+     * Class, int, Object) resilient field write}.
+     * <p>
+     * Minecraft's {@code PlayerTeam} setters assert the global tick thread on
+     * Folia/Canvas, where NPC command handlers do not run. The setter is still
+     * tried first because it is the only path that understands the field's
+     * current type after a mapping rename, and because the value is assigned
+     * before the scoreboard callback that raises the assertion. The direct write
+     * then covers builds that guard inside the setter itself. Never throws and
+     * never logs; a property that cannot be applied is simply skipped.
+     *
+     * @param setter     public mutator to attempt first
+     * @param instance   object whose field to write as a fallback
+     * @param name       expected field name for the fallback lookup
+     * @param fieldType  declared type the fallback field is assignable to
+     * @param typeIndex  zero-based index among fields of that type
+     * @param value      value to assign in the fallback
+     */
+    public static void setValueResilient(Runnable setter, Object instance, String name, Class<?> fieldType, int typeIndex, Object value) {
+        try {
+            setter.run();
+            return;
+        } catch (Throwable ignored) {
+            // The setter guarded the calling thread (Folia/Canvas global tick
+            // thread); fall back to writing the backing field directly.
+        }
+
+        setValueResilient(instance, name, fieldType, typeIndex, value);
     }
 
     private static Field findFieldByName(Class<?> clazz, String name, Class<?> fieldType) {

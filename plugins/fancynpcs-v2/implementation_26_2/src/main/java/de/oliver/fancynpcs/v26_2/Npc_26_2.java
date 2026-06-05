@@ -246,12 +246,15 @@ public class Npc_26_2 extends Npc {
         PlayerTeam team = new PlayerTeam(new Scoreboard(), "npc-" + localName);
         team.getPlayers().clear();
         team.getPlayers().add(npc instanceof ServerPlayer npcPlayer ? npcPlayer.getGameProfile().name() : npc.getStringUUID());
-        // Throwaway team used only to build the packet below; write the fields
-        // directly because the PlayerTeam setters assert the global tick thread
-        // on Folia/Canvas, which command handlers do not run on.
-        ReflectionUtils.setValueResilient(team, "color", net.minecraft.ChatFormatting.class, 0, PaperAdventure.asVanilla(data.getGlowingColor()));
+        // Throwaway team, only used to build the packet below. Prefer the public
+        // setters: they understand the field's current (post-rename) type, and on
+        // Folia/Canvas the value is applied before the off-thread scoreboard
+        // assertion fires. Fall back to a direct field write for builds that guard
+        // inside the setter. Best-effort: never throws, never logs.
+        net.minecraft.ChatFormatting glowColor = PaperAdventure.asVanilla(data.getGlowingColor());
+        ReflectionUtils.setValueResilient(() -> team.setColor(glowColor), team, "color", net.minecraft.ChatFormatting.class, 0, glowColor);
         if (!data.isCollidable()) {
-            ReflectionUtils.setValueResilient(team, "collisionRule", Team.CollisionRule.class, 0, Team.CollisionRule.NEVER);
+            ReflectionUtils.setValueResilient(() -> team.setCollisionRule(Team.CollisionRule.NEVER), team, "collisionRule", Team.CollisionRule.class, 0, Team.CollisionRule.NEVER);
         }
 
         net.kyori.adventure.text.Component displayName = PaperColor.handler().translate(data.getDisplayName(), serverPlayer.getBukkitEntity());
@@ -273,15 +276,16 @@ public class Npc_26_2 extends Npc {
         }
 
         if (data.getDisplayName().equalsIgnoreCase("<empty>")) {
-            ReflectionUtils.setValueResilient(team, "nameTagVisibility", Team.Visibility.class, 0, Team.Visibility.NEVER);
+            ReflectionUtils.setValueResilient(() -> team.setNameTagVisibility(Team.Visibility.NEVER), team, "nameTagVisibility", Team.Visibility.class, 0, Team.Visibility.NEVER);
             npc.setCustomName(null);
             npc.setCustomNameVisible(false);
         } else {
-            ReflectionUtils.setValueResilient(team, "nameTagVisibility", Team.Visibility.class, 0, Team.Visibility.ALWAYS);
+            ReflectionUtils.setValueResilient(() -> team.setNameTagVisibility(Team.Visibility.ALWAYS), team, "nameTagVisibility", Team.Visibility.class, 0, Team.Visibility.ALWAYS);
         }
 
         if (npc instanceof ServerPlayer npcPlayer) {
-            ReflectionUtils.setValueResilient(team, "playerPrefix", Component.class, 1, vanillaComponent);
+            final Component teamPrefix = vanillaComponent;
+            ReflectionUtils.setValueResilient(() -> team.setPlayerPrefix(teamPrefix), team, "playerPrefix", Component.class, 1, teamPrefix);
             npcPlayer.listName = vanillaComponent;
 
             EnumSet<ClientboundPlayerInfoUpdatePacket.Action> actions = EnumSet.noneOf(ClientboundPlayerInfoUpdatePacket.Action.class);
