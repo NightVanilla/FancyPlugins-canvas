@@ -8,30 +8,26 @@
     "platform": "paper",
     "channel": "release",
     "supported_versions": [
-      "26.1.2"
+      "26.2"
     ]
   },
   "modrinth": {
     "project_id": "E2QZdSBL",
     "supported_versions": [
-      "26.1.2"
+      "26.2"
     ],
     "channel": "release",
     "loaders": [
       "paper",
       "folia"
     ],
-    "featured": true,
-    "dependencies": [
-      "EeyAn23L",
-      "4h8rX3rt"
-    ]
+    "featured": true
   },
   "hangar": {
     "author": "oliver",
     "project_id": "FancyNpcsModel",
     "supported_versions": [
-      "26.1.2"
+      "26.2"
     ],
     "channel": "Release"
   }

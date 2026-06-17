@@ -1,4 +1,4 @@
-package de.oliver.fancynpcs.v26_2;
+package de.oliver.fancynpcs.v26_1_1;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
@@ -51,14 +51,14 @@ import org.lushplugins.chatcolorhandler.paper.PaperColor;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class Npc_26_2 extends Npc {
+public class Npc_26_1_1 extends Npc {
 
     private final String localName;
     private final UUID uuid;
     private Entity npc;
     private Display.TextDisplay sittingVehicle;
 
-    public Npc_26_2(NpcData data) {
+    public Npc_26_1_1(NpcData data) {
         super(data);
 
         this.localName = generateLocalName();
@@ -250,11 +250,9 @@ public class Npc_26_2 extends Npc {
         // setters: they understand the field's current (post-rename) type, and on
         // Folia/Canvas the value is applied before the off-thread scoreboard
         // assertion fires. Fall back to a direct field write for builds that guard
-        // inside the setter. Best-effort: never throws, never logs. On 26.2 the
-        // color setter and backing field take an Optional<TeamColor>; let the
-        // compiler infer it so we follow the 26.2 PaperAdventure#asVanilla overload.
-        var glowColor = Optional.of(PaperAdventure.asVanilla(data.getGlowingColor()));
-        ReflectionUtils.setValueResilient(() -> team.setColor(glowColor), team, "color", Optional.class, 0, glowColor);
+        // inside the setter. Best-effort: never throws, never logs.
+        net.minecraft.ChatFormatting glowColor = PaperAdventure.asVanilla(data.getGlowingColor());
+        ReflectionUtils.setValueResilient(() -> team.setColor(glowColor), team, "color", net.minecraft.ChatFormatting.class, 0, glowColor);
         if (!data.isCollidable()) {
             ReflectionUtils.setValueResilient(() -> team.setCollisionRule(Team.CollisionRule.NEVER), team, "collisionRule", Team.CollisionRule.class, 0, Team.CollisionRule.NEVER);
         }
@@ -469,7 +467,7 @@ public class Npc_26_2 extends Npc {
         }
 
         if (sittingVehicle == null) {
-            sittingVehicle = new Display.TextDisplay(EntityTypes.TEXT_DISPLAY, ((CraftWorld) data.getLocation().getWorld()).getHandle());
+            sittingVehicle = new Display.TextDisplay(EntityType.TEXT_DISPLAY, ((CraftWorld) data.getLocation().getWorld()).getHandle());
         }
 
         sittingVehicle.setPos(data.getLocation().x(), data.getLocation().y(), data.getLocation().z());

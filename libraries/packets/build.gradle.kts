@@ -11,16 +11,15 @@ allprojects {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.1.2.build.+")
 
     implementation(project(":libraries:packets:packets-api"))
     implementation(project(":libraries:packets:implementations:26_2"))
-    implementation(project(":libraries:packets:implementations:26_1_1"))
+    implementation(project(":libraries:packets:implementations:26_1_2"))
     implementation(project(":libraries:packets:implementations:1_21_11"))
     implementation(project(":libraries:packets:implementations:1_21_9"))
     implementation(project(":libraries:packets:implementations:1_21_6"))
     implementation(project(":libraries:packets:implementations:1_21_5"))
-    implementation(project(":libraries:packets:implementations:1_21_4"))
     implementation("de.oliver.FancyAnalytics:logger:0.0.8")
 }
 
