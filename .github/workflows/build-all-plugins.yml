@@ -36,7 +36,6 @@ jobs:
         run: >
           ./gradlew
           :plugins:fancynpcs-v2:shadowJar
-          :plugins:fancynpcs:shadowJar
           :plugins:fancynpcs-model:shadowJar
           :plugins:fancyholograms-v2:shadowJar
           :plugins:fancyholograms:shadowJar

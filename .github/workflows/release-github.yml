@@ -61,7 +61,6 @@ jobs:
           RELEASE_CHANNEL: 'release'
         run: >
           ./gradlew
-          :plugins:fancynpcs:shadowJar
           :plugins:fancynpcs-v2:shadowJar
           :plugins:fancynpcs-model:shadowJar
           :plugins:fancyholograms:shadowJar
